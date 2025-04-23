@@ -122,7 +122,15 @@
     // 📄 Download as PDF
     function downloadPDF() {
       const element = document.getElementById("resultContent");
-      html2pdf().from(element).save(`${userInfo.name || '4QS'}_Result.pdf`);
+      const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
+      const opt = {
+        margin:       0.5,
+        filename:     `4QS_${userInfo.name || 'Participant'}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
     }
   </script>
 </body>
