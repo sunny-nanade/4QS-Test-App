@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>4QS Test Interface</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    #question-container { margin-top: 20px; }
+    .question-box { margin-bottom: 30px; }
+    .options label, .scale label { display: block; margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 4QS Test</h1>
+    <label for="testSelector">Choose a test:</label>
+    <select id="testSelector">
+      <option value="">-- Select Test --</option>
+      <option value="iq">Intelligence Quotient (IQ)</option>
+      <option value="eq">Emotional Quotient (EQ)</option>
+      <option value="aq">Adversity Quotient (AQ)</option>
+      <option value="sq">Spiritual Quotient (SQ)</option>
+      <option value="stress">Stress Level</option>
+    </select>
+
+    <div id="question-container"></div>
+    <button id="prevBtn" style="display:none;">Previous</button>
+    <button id="nextBtn" style="display:none;">Next</button>
+    <button id="submitBtn" style="display:none;">Submit</button>
+  </div>
+
+  <footer id="test-source" style="margin-top: 40px; text-align:center; font-size: 14px;"></footer>
+
+  <script>
+    const testSelector = document.getElementById("testSelector");
+    const container = document.getElementById("question-container");
+    const footer = document.getElementById("test-source");
+
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const submitBtn = document.getElementById("submitBtn");
+
+    let questions = [], currentIndex = 0, responses = [], testName = "", maxQuestions = 20;
+
+    const sources = {
+      iq: "Based on the Wonderlic Cognitive Ability Test",
+      eq: "Based on the EQ-i 2.0 Model (Bar-On)",
+      aq: "Based on the CORE Model by Dr. Paul Stoltz",
+      sq: "Based on the SISRI-24 Inventory (King, 2008)",
+      stress: "Based on the Perceived Stress Scale (PSS-10) by Cohen et al."
+    };
+
+    testSelector.addEventListener("change", async () => {
+      testName = testSelector.value;
+      if (!testName) return;
+
+      container.innerHTML = "Loading questions...";
+      footer.textContent = sources[testName];
+      const res = await fetch(`questions/${testName}.json`);
+      const all = await res.json();
+
+      maxQuestions = testName === "stress" ? 10 : 20;
+      questions = all.sort(() => 0.5 - Math.random()).slice(0, maxQuestions);
+      responses = new Array(questions.length).fill(null);
+      currentIndex = 0;
+
+      showQuestion();
+      nextBtn.style.display = "inline-block";
+      submitBtn.style.display = "inline-block";
+    });
+
+    function showQuestion() {
+      const q = questions[currentIndex];
+      container.innerHTML = `
+        <div class="question-box">
+          <h3>Question ${currentIndex + 1} of ${questions.length}</h3>
+          <p>${q.question}</p>
+          <div class="options">${generateOptions(q, currentIndex)}</div>
+        </div>
+      `;
+
+      prevBtn.style.display = currentIndex > 0 ? "inline-block" : "none";
+      nextBtn.style.display = currentIndex < questions.length - 1 ? "inline-block" : "none";
+    }
+
+    function generateOptions(q, idx) {
+      if (q.options) {
+        return q.options.map((opt, i) => `
+          <label><input type="radio" name="q${idx}" value="${opt}" ${responses[idx] === opt ? "checked" : ""} /> ${opt}</label>
+        `).join("");
+      }
+      if (q.scale) {
+        return q.scale.map((opt, i) => `
+          <label><input type="radio" name="q${idx}" value="${opt}" ${responses[idx] === opt ? "checked" : ""} /> ${opt}</label>
+        `).join("");
+      }
+      return "";
+    }
+
+    container.addEventListener("change", e => {
+      if (e.target.name.startsWith("q")) {
+        const idx = parseInt(e.target.name.substring(1));
+        responses[idx] = e.target.value;
+      }
+    });
+
+    nextBtn.onclick = () => {
+      if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        showQuestion();
+      }
+    };
+
+    prevBtn.onclick = () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        showQuestion();
+      }
+    };
+
+    submitBtn.onclick = () => {
+      if (responses.includes(null)) {
+        alert("Please answer all questions.");
+        return;
+      }
+
+      localStorage.setItem(`${testName}_responses`, JSON.stringify(responses));
+      alert(`✅ Test submitted for ${testName.toUpperCase()}! Responses saved to localStorage.`);
+      // Optionally redirect to results page here
+    };
+  </script>
+</body>
+</html>
