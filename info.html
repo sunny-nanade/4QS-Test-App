@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>4QS Test – Participant Details</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey && ['c', 'u', 's'].includes(e.key.toLowerCase())) || e.key === 'F12') {
+        e.preventDefault();
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 Participant Details</h1>
+    <form id="infoForm">
+      <label>Full Name:</label><br>
+      <input type="text" name="name" required><br><br>
+
+      <label>Email Address:</label><br>
+      <input type="email" name="email" required><br><br>
+
+      <label>Age:</label><br>
+      <input type="number" name="age" required><br><br>
+
+      <label>Gender:</label><br>
+      <select name="gender" required>
+        <option value="" disabled selected>Select your gender</option>
+        <option value="Female">Female</option>
+        <option value="Male">Male</option>
+        <option value="Non-binary">Non-binary</option>
+        <option value="Prefer not to say">Prefer not to say</option>
+      </select><br><br>
+
+      <label>Education Level:</label><br>
+      <input type="text" name="education" required><br><br>
+
+      <label>Profession / Role:</label><br>
+      <input type="text" name="profession" required><br><br>
+
+      <button type="submit">Continue to Test</button>
+    </form>
+  </div>
+
+  <footer>
+    <p>© 2025 Sunny Nanade – All rights reserved</p>
+  </footer>
+
+  <script>
+    document.getElementById('infoForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Save data in localStorage for later use
+      const formData = new FormData(this);
+      for (const [key, value] of formData.entries()) {
+        localStorage.setItem(key, value);
+      }
+
+      // Redirect to test interface
+      window.location.href = "test.html";
+    });
+  </script>
+</body>
+</html>
