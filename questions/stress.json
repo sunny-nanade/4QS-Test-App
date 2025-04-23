@@ -50,7 +50,6 @@
     "reverse": false
   },
 
-  // Additional 5 questions
   {
     "question": "In the last week, how often have you felt overwhelmed by responsibilities?",
     "scale": ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
