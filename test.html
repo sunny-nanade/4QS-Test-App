@@ -12,6 +12,7 @@
     #test-title { font-size: 1.4rem; margin: 15px 0; text-transform: uppercase; color: #333; }
     #test-progress { font-size: 1rem; color: #555; margin-bottom: 10px; }
     #action-buttons button { margin: 5px; }
+    #submitHint { font-size: 0.9em; color: #888; display: block; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -22,14 +23,12 @@
     <div id="timer"></div>
     <div id="question-container"></div>
     <div id="action-buttons">
-        <!-- Place inside <div id="action-buttons"> -->
-        <button id="prevBtn" style="display:none;">Previous</button>
-        <button id="nextBtn" style="display:none;">Next</button>
-        <button id="submitBtn" disabled>Submit Test</button>
-        <button id="skipBtn">Skip This Test</button>
-        <button id="exitBtn">End Assessment</button>
-        <small id="submitHint" style="display:block; font-size: 0.9em; color: #888;">You can submit only after answering all questions.</small>
-
+      <button id="prevBtn" style="display:none;">Previous</button>
+      <button id="nextBtn" style="display:none;">Next</button>
+      <button id="submitBtn" disabled>Submit Test</button>
+      <button id="skipBtn">Skip This Test</button>
+      <button id="exitBtn">End Assessment</button>
+      <small id="submitHint">You can submit only after answering all questions.</small>
     </div>
   </div>
 
@@ -123,7 +122,7 @@
           <div class="options">${generateOptions(q, currentIndex)}</div>
         </div>
       `;
-      submitBtn.style.display = responses.every(r => r !== null) ? "inline-block" : "none";
+      submitBtn.disabled = responses.includes(null);
       prevBtn.style.display = currentIndex > 0 ? "inline-block" : "none";
       nextBtn.style.display = currentIndex < questions.length - 1 ? "inline-block" : "none";
     }
@@ -139,7 +138,7 @@
       if (e.target.name.startsWith("q")) {
         const idx = parseInt(e.target.name.substring(1));
         responses[idx] = e.target.value;
-        submitBtn.style.display = responses.every(r => r !== null) ? "inline-block" : "none";
+        submitBtn.disabled = responses.includes(null);
       }
     });
 
@@ -157,7 +156,10 @@
       }
     };
 
-    submitBtn.onclick = () => submitTest();
+    submitBtn.onclick = () => {
+      if (!submitBtn.disabled) submitTest();
+    };
+
     skipBtn.onclick = () => goToNextTest();
     exitBtn.onclick = () => window.location.href = "results.html";
 
