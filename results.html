@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>4QS Results Summary</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link rel="stylesheet" href="style.css" />
   <style>
     body {
@@ -24,7 +23,7 @@
     }
     canvas {
       max-width: 100%;
-      margin: 30px 0 0;
+      margin-top: 30px;
     }
     h2 {
       margin-top: 20px;
@@ -52,36 +51,38 @@
     const scores = {};
     const scoreOutput = document.getElementById("scoreOutput");
 
-    // ✅ Accurate ML-style scoring: Only for answered questions
+    // ✅ Updated ML-style scoring logic
     function scoreML(responses) {
       if (!responses || responses.length === 0) return 0;
-      const answered = responses.filter(r => r !== null);
+
+      const answered = responses.filter(r => r !== null && r !== '');
       if (answered.length === 0) return 0;
 
       let total = 0;
+
       answered.forEach(r => {
-        const val = parseInt(r);
-        if (!isNaN(val)) {
-          total += val; // Likert
+        const num = Number(r);
+        if (!isNaN(num)) {
+          total += num; // Likert 1–5
         } else {
-          total += 1; // MCQ assumption
+          total += 1;   // MCQ fallback (e.g., "Agree", "True")
         }
       });
 
       const maxPossible = answered.length * 5;
-      return Math.round((total / maxPossible) * 100);
+      return maxPossible === 0 ? 0 : Math.round((total / maxPossible) * 100);
     }
 
-    // Calculate individual scores
+    // Calculate each test score
     tests.forEach(test => {
       const responses = JSON.parse(localStorage.getItem(`${test}_responses`) || "[]");
       scores[test.toUpperCase()] = scoreML(responses);
     });
 
-    // Compute final 4QS
+    // Compute final 4QS (average of IQ, EQ, AQ, SQ)
     const fourQS = Math.round((scores.IQ + scores.EQ + scores.AQ + scores.SQ) / 4);
 
-    // Load user info
+    // 👤 Load participant info
     const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
     document.getElementById("userDetails").innerHTML = `
       <h2>👤 Participant Info</h2>
@@ -92,13 +93,13 @@
       <p><strong>Profession:</strong> ${userInfo.profession || 'N/A'}</p>
     `;
 
-    // Show test scores
+    // Display scores
     for (const [key, val] of Object.entries(scores)) {
       scoreOutput.innerHTML += `<p><strong>${key}:</strong> ${val} / 100</p>`;
     }
     scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
 
-    // Radar chart
+    // Render radar chart
     new Chart(document.getElementById("radarChart"), {
       type: "radar",
       data: {
