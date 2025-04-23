@@ -89,3 +89,30 @@ button:disabled {
   display: block;
   margin-top: 5px;
 }
+
+#question-tracker {
+  margin: 10px 0 20px;
+  text-align: center;
+}
+
+#question-tracker button {
+  margin: 4px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#question-tracker button.answered {
+  background-color: #28a745; /* Green */
+  color: white;
+}
+
+#question-tracker button.unanswered {
+  background-color: #dc3545; /* Red */
+  color: white;
+}
