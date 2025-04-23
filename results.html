@@ -5,35 +5,6 @@
   <title>4QS Results Summary</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-    }
-    .summary {
-      max-width: 700px;
-      margin: 20px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-    canvas {
-      max-width: 100%;
-      margin-top: 30px;
-    }
-    h2 {
-      margin-top: 20px;
-      color: #333;
-    }
-    .scores p, .user-info p {
-      font-size: 18px;
-      margin: 6px 0;
-    }
-  </style>
 </head>
 <body>
   <div class="summary" id="resultContent">
@@ -47,7 +18,7 @@
   <script>
     const tests = ["iq", "eq", "aq", "sq", "stress"];
     const scores = {};
-    const meta = {}; // Store attempted/correct per test
+    const meta = {};
     const scoreOutput = document.getElementById("scoreOutput");
 
     const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
@@ -60,29 +31,22 @@
       <p><strong>Profession:</strong> ${userInfo.profession || 'N/A'}</p>
     `;
 
-    // Score Likert-style tests
     function scoreLikert(responses, test) {
       const answered = responses.filter(r => r !== null && r !== '');
       let total = 0;
-
       answered.forEach(r => {
         const num = Number(r);
-        if (!isNaN(num)) total += num;
-        else total += 1;
+        total += isNaN(num) ? 1 : num;
       });
-
       const maxPossible = answered.length * 5;
       meta[test] = { attempted: answered.length };
       return maxPossible === 0 ? 0 : Math.round((total / maxPossible) * 100);
     }
 
-    // Score IQ using answer key from iq.json
-    async function scoreIQ(responses) {
-      const res = await fetch('questions/iq.json');
-      const questions = await res.json();
+    function scoreIQ(responses) {
+      const questions = JSON.parse(localStorage.getItem("iq_questions_shown") || "[]");
       let correct = 0;
       let attempted = 0;
-
       responses.forEach((r, i) => {
         if (r !== null && r !== "") {
           attempted++;
@@ -91,17 +55,15 @@
           if (userAns === correctAns) correct++;
         }
       });
-
       meta.iq = { attempted, correct };
-      return Math.round((correct / questions.length) * 100);
+      return questions.length === 0 ? 0 : Math.round((correct / questions.length) * 100);
     }
 
-    // Main logic
     async function calculateResults() {
       for (const test of tests) {
         const responses = JSON.parse(localStorage.getItem(`${test}_responses`) || "[]");
         if (test === "iq") {
-          scores.IQ = await scoreIQ(responses);
+          scores.IQ = scoreIQ(responses);
         } else {
           scores[test.toUpperCase()] = scoreLikert(responses, test);
         }
@@ -111,8 +73,8 @@
 
       for (const [key, val] of Object.entries(scores)) {
         scoreOutput.innerHTML += `<p><strong>${key}:</strong> ${val} / 100</p>`;
-        if (meta[key.toLowerCase()]) {
-          const m = meta[key.toLowerCase()];
+        const m = meta[key.toLowerCase()];
+        if (m) {
           scoreOutput.innerHTML += `<p>Attempted: ${m.attempted || 0}</p>`;
           if (m.correct !== undefined) {
             scoreOutput.innerHTML += `<p>Correct: ${m.correct}</p>`;
@@ -123,7 +85,6 @@
 
       scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
 
-      // Chart
       new Chart(document.getElementById("radarChart"), {
         type: "radar",
         data: {
