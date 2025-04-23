@@ -1,1 +1,31 @@
+[
+  { "question": "I recognize my emotions as they occur.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I find it easy to express how I feel.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I understand why I feel the way I do.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I stay calm in emotionally charged situations.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I am aware of how my emotions affect others.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
 
+  { "question": "I am comfortable sharing my feelings with others.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I find it easy to resolve conflicts with others.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I adapt quickly when emotional circumstances change.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I actively listen when others speak about their emotions.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I consider others' feelings before making decisions.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+
+  { "question": "I have a clear understanding of my emotional triggers.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I respond rather than react when I'm upset.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I recognize emotional patterns in myself.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I stay composed even under stress.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I maintain healthy emotional boundaries.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+
+  { "question": "I reflect on how my emotions influence my behavior.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I am open to receiving emotional feedback.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I am confident in managing emotionally difficult conversations.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I consider multiple perspectives before reacting emotionally.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I can identify emotional needs in others.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+
+  { "question": "I find it easy to ask for emotional support when needed.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I stay positive even when faced with emotionally tough situations.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I understand the link between thoughts and feelings.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I am aware of my tone when speaking during emotional moments.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] },
+  { "question": "I remain empathetic even in disagreements.", "scale": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"] }
+]
