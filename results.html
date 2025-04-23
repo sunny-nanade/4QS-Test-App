@@ -33,6 +33,11 @@
       font-size: 18px;
       margin: 6px 0;
     }
+    #sync-status {
+      margin-top: 20px;
+      color: green;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -42,6 +47,7 @@
     <hr/>
     <div class="scores" id="scoreOutput"></div>
     <canvas id="radarChart"></canvas>
+    <div id="sync-status"></div>
   </div>
 
   <script>
@@ -63,6 +69,7 @@
     function scoreIQ(responses) {
       const shownQuestions = JSON.parse(localStorage.getItem("iq_questions_shown") || "[]");
       let correct = 0, attempted = 0;
+
       responses.forEach((r, i) => {
         if (r !== null && r !== "") {
           attempted++;
@@ -71,6 +78,7 @@
           if (userAns === correctAns) correct++;
         }
       });
+
       meta.iq = { attempted, correct };
       return attempted ? Math.round((correct / shownQuestions.length) * 100) : 0;
     }
@@ -90,7 +98,6 @@
         const val = ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree",
                      "Never", "Rarely", "Sometimes", "Often", "Very Often"].indexOf(r) % 5 + 1;
         const score = reverse ? 6 - val : val;
-
         composites[comp] = (composites[comp] || 0) + score;
         attempts[comp] = (attempts[comp] || 0) + 1;
       });
@@ -135,6 +142,7 @@
 
       scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
 
+      // Radar chart
       new Chart(document.getElementById("radarChart"), {
         type: "radar",
         data: {
@@ -160,23 +168,40 @@
         }
       });
 
-      // ✅ Send to Google Sheets
+      // Send to Google Sheets
+      const payload = {
+        name: userInfo.name,
+        email: userInfo.email,
+        age: userInfo.age,
+        gender: userInfo.gender,
+        profession: userInfo.profession,
+        iq: scores.IQ,
+        eq: scores.EQ,
+        aq: scores.AQ,
+        sq: scores.SQ,
+        stress: scores.STRESS,
+        fourqs: fourQS,
+        timestamp: new Date().toLocaleString()
+      };
+
       fetch("https://script.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: userInfo.name,
-          email: userInfo.email,
-          age: userInfo.age,
-          gender: userInfo.gender,
-          profession: userInfo.profession,
-          iq: scores.IQ,
-          eq: scores.EQ,
-          aq: scores.AQ,
-          sq: scores.SQ,
-          stress: scores.STRESS,
-          fourqs: fourQS
-        })
+        body: JSON.stringify(payload)
+      })
+      .then(res => {
+        if (res.ok) {
+          document.getElementById("sync-status").innerText = "✅ Successfully submitted to Google Sheet!";
+          // Auto-clear localStorage
+          ["iq", "eq", "aq", "sq", "stress"].forEach(t => localStorage.removeItem(`${t}_responses`));
+          localStorage.removeItem("user_info");
+          localStorage.removeItem("iq_questions_shown");
+        } else {
+          document.getElementById("sync-status").innerText = "⚠️ Failed to submit data to Google Sheet.";
+        }
+      })
+      .catch(() => {
+        document.getElementById("sync-status").innerText = "⚠️ Could not connect to Google Sheets.";
       });
     }
 
