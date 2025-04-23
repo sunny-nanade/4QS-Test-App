@@ -165,7 +165,6 @@
         }
       });
 
-      // Submit to Google Sheets
       const payload = {
         timestamp: new Date().toLocaleString(),
         name: userInfo.name,
@@ -186,15 +185,10 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       })
-      .then(res => {
-        if (res.ok) {
-          document.getElementById("sync-status").innerText = "✅ Successfully submitted to Google Sheet!";
-          ["iq", "eq", "aq", "sq", "stress"].forEach(t => localStorage.removeItem(`${t}_responses`));
-          localStorage.removeItem("user_info");
-          localStorage.removeItem("iq_questions_shown");
-        } else {
-          document.getElementById("sync-status").innerText = "⚠️ Failed to submit data to Google Sheet.";
-        }
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(() => {
+        document.getElementById("sync-status").innerText = "✅ Successfully submitted to Google Sheet!";
+        ["iq", "eq", "aq", "sq", "stress", "iq_questions_shown", "user_info"].forEach(key => localStorage.removeItem(key));
       })
       .catch(() => {
         document.getElementById("sync-status").innerText = "⚠️ Could not connect to Google Sheets.";
