@@ -7,9 +7,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link rel="stylesheet" href="style.css" />
   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+    }
     .summary {
       max-width: 700px;
-      margin: 40px auto;
+      margin: 20px auto;
       padding: 20px;
       background: white;
       border-radius: 8px;
@@ -18,7 +24,7 @@
     }
     canvas {
       max-width: 100%;
-      margin-top: 30px;
+      margin: 30px 0 0;
     }
     h2 {
       margin-top: 20px;
@@ -27,11 +33,6 @@
     .scores p, .user-info p {
       font-size: 18px;
       margin: 6px 0;
-    }
-    #download-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
     }
   </style>
 </head>
@@ -44,7 +45,6 @@
 
     <div class="scores" id="scoreOutput"></div>
     <canvas id="radarChart"></canvas>
-    <button id="download-btn" onclick="downloadPDF()">📄 Download as PDF</button>
   </div>
 
   <script>
@@ -52,31 +52,36 @@
     const scores = {};
     const scoreOutput = document.getElementById("scoreOutput");
 
-    // 🧠 Simulated ML-style scoring: scale responses from 0-5 → out of 100
+    // ✅ Accurate ML-style scoring: Only for answered questions
     function scoreML(responses) {
       if (!responses || responses.length === 0) return 0;
+      const answered = responses.filter(r => r !== null);
+      if (answered.length === 0) return 0;
+
       let total = 0;
-      responses.forEach(r => {
+      answered.forEach(r => {
         const val = parseInt(r);
         if (!isNaN(val)) {
-          total += val;
+          total += val; // Likert
         } else {
-          total += 1; // assume MCQ is binary correct
+          total += 1; // MCQ assumption
         }
       });
-      return Math.round((total / (responses.length * 5)) * 100);
+
+      const maxPossible = answered.length * 5;
+      return Math.round((total / maxPossible) * 100);
     }
 
-    // 🚀 Calculate test scores
+    // Calculate individual scores
     tests.forEach(test => {
       const responses = JSON.parse(localStorage.getItem(`${test}_responses`) || "[]");
       scores[test.toUpperCase()] = scoreML(responses);
     });
 
-    // 📊 Compute final 4QS (average of IQ, EQ, AQ, SQ)
+    // Compute final 4QS
     const fourQS = Math.round((scores.IQ + scores.EQ + scores.AQ + scores.SQ) / 4);
 
-    // 👤 User Info
+    // Load user info
     const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
     document.getElementById("userDetails").innerHTML = `
       <h2>👤 Participant Info</h2>
@@ -87,13 +92,13 @@
       <p><strong>Profession:</strong> ${userInfo.profession || 'N/A'}</p>
     `;
 
-    // 📊 Text Summary
+    // Show test scores
     for (const [key, val] of Object.entries(scores)) {
       scoreOutput.innerHTML += `<p><strong>${key}:</strong> ${val} / 100</p>`;
     }
     scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
 
-    // 📈 Radar Chart
+    // Radar chart
     new Chart(document.getElementById("radarChart"), {
       type: "radar",
       data: {
@@ -118,20 +123,6 @@
         }
       }
     });
-
-    // 📄 Download as PDF
-    function downloadPDF() {
-      const element = document.getElementById("resultContent");
-      const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
-      const opt = {
-        margin:       0.5,
-        filename:     `4QS_${userInfo.name || 'Participant'}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
-    }
   </script>
 </body>
 </html>
