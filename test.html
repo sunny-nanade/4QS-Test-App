@@ -84,7 +84,6 @@
         updateTimerDisplay();
         if (timeLeft <= 0) {
           clearInterval(timer);
-          alert("⏰ Time's up! Submitting the test.");
           submitTest();
         }
       }, 1000);
@@ -151,7 +150,6 @@
       }
 
       localStorage.setItem(`${testName}_responses`, JSON.stringify(responses));
-      alert(`✅ Test submitted for ${testName.toUpperCase()}! Responses saved.`);
 
       const testOrder = ["iq", "eq", "aq", "sq", "stress"];
       const currentIndexInOrder = testOrder.indexOf(testName);
@@ -160,6 +158,7 @@
       if (nextTest) {
         window.location.href = `test.html?test=${nextTest}`;
       } else {
+        // Only show results page after completing all tests
         window.location.href = "results.html";
       }
     }
