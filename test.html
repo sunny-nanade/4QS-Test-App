@@ -32,7 +32,6 @@
     const timerDisplay = document.getElementById("timer");
     const testTitle = document.getElementById("test-title");
     const testProgress = document.getElementById("test-progress");
-
     const nextBtn = document.getElementById("nextBtn");
     const prevBtn = document.getElementById("prevBtn");
     const submitBtn = document.getElementById("submitBtn");
@@ -59,6 +58,14 @@
       stress: 4 * 60
     };
 
+    const questionLimits = {
+      iq: 30,
+      eq: 25,
+      aq: 25,
+      sq: 25,
+      stress: 15
+    };
+
     const testOrder = ["iq", "eq", "aq", "sq", "stress"];
 
     window.onload = () => {
@@ -76,32 +83,28 @@
       footer.textContent = sources[testName];
       timeLeft = durations[testName];
 
-      fetch(`questions/${testName}.json`)
-        .then(res => res.json())
-        .then(all => {
-          maxQuestions = testName === "stress" ? 15 : 20;
-          questions = all.sort(() => 0.5 - Math.random()).slice(0, maxQuestions);
+      fetch(`questions/${testName}.json`).then(res => res.json()).then(all => {
+        maxQuestions = questionLimits[testName];
+        questions = all.sort(() => 0.5 - Math.random()).slice(0, maxQuestions);
+        if (!questions.length) {
+          container.innerHTML = "<p style='color:red;'>No questions found for this test. Please contact the administrator.</p>";
+          actionButtons.style.display = "none";
+          return;
+        }
 
-          if (!questions.length) {
-            container.innerHTML = "<p style='color:red;'>No questions found for this test. Please contact the administrator.</p>";
-            actionButtons.style.display = "none";
-            return;
-          }
+        if (testName === 'iq') {
+          localStorage.setItem("iq_questions_shown", JSON.stringify(questions));
+        }
 
-          if (testName === 'iq') {
-            localStorage.setItem("iq_questions_shown", JSON.stringify(questions));
-          }
-
-          responses = new Array(questions.length).fill(null);
-          currentIndex = 0;
-          startTimer();
-          showQuestion();
-
-          nextBtn.style.display = "inline-block";
-          prevBtn.style.display = "inline-block";
-          skipBtn.style.display = "inline-block";
-          exitBtn.style.display = "inline-block";
-        });
+        responses = new Array(questions.length).fill(null);
+        currentIndex = 0;
+        startTimer();
+        showQuestion();
+        nextBtn.style.display = "inline-block";
+        prevBtn.style.display = "inline-block";
+        skipBtn.style.display = "inline-block";
+        exitBtn.style.display = "inline-block";
+      });
     };
 
     function startTimer() {
@@ -188,7 +191,7 @@
     };
 
     submitBtn.onclick = () => {
-      submitTest();
+      if (!submitBtn.disabled) submitTest();
     };
 
     skipBtn.onclick = () => goToNextTest();
@@ -200,7 +203,6 @@
         alert("Please answer all questions before submitting.");
         return;
       }
-
       clearInterval(timer);
       localStorage.setItem(`${testName}_responses`, JSON.stringify(responses));
       goToNextTest();
