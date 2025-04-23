@@ -42,9 +42,11 @@
     document.getElementById('infoForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const formData = new FormData(this);
+      const userInfo = {};
       for (const [key, value] of formData.entries()) {
-        localStorage.setItem(`user_${key}`, value);
+        userInfo[key] = value;
       }
+      localStorage.setItem("user_info", JSON.stringify(userInfo));
       window.location.href = "test.html?test=iq";
     });
   </script>
