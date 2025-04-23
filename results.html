@@ -50,7 +50,6 @@
     const meta = {};
     const scoreOutput = document.getElementById("scoreOutput");
 
-    // 👤 Show participant info
     const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
     document.getElementById("userDetails").innerHTML = `
       <h2>👤 Participant Info</h2>
@@ -64,7 +63,6 @@
     function scoreIQ(responses) {
       const shownQuestions = JSON.parse(localStorage.getItem("iq_questions_shown") || "[]");
       let correct = 0, attempted = 0;
-
       responses.forEach((r, i) => {
         if (r !== null && r !== "") {
           attempted++;
@@ -73,7 +71,6 @@
           if (userAns === correctAns) correct++;
         }
       });
-
       meta.iq = { attempted, correct };
       return attempted ? Math.round((correct / shownQuestions.length) * 100) : 0;
     }
@@ -88,7 +85,6 @@
 
       responses.forEach((r, i) => {
         if (!r || !questions[i]) return;
-
         const comp = questions[i].composite || "General";
         const reverse = questions[i].reverse;
         const val = ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree",
@@ -115,10 +111,9 @@
     async function calculateResults() {
       for (const test of tests) {
         const responses = JSON.parse(localStorage.getItem(`${test}_responses`) || "[]");
-
         if (test === "iq") {
           scores.IQ = scoreIQ(responses);
-        } else if (test === "eq" || test === "aq" || test === "sq" || test === "stress") {
+        } else {
           const labelPrefix = test.toUpperCase() + " - ";
           scores[test.toUpperCase()] = await scoreComposite(test, labelPrefix);
         }
@@ -163,6 +158,25 @@
             }
           }
         }
+      });
+
+      // ✅ Send to Google Sheets
+      fetch("https://script.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: userInfo.name,
+          email: userInfo.email,
+          age: userInfo.age,
+          gender: userInfo.gender,
+          profession: userInfo.profession,
+          iq: scores.IQ,
+          eq: scores.EQ,
+          aq: scores.AQ,
+          sq: scores.SQ,
+          stress: scores.STRESS,
+          fourqs: fourQS
+        })
       });
     }
 
