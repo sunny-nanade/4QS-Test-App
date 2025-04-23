@@ -11,6 +11,7 @@
     <div id="test-title"></div>
     <div id="test-progress"></div>
     <div id="timer"></div>
+    <div id="question-tracker"></div>
     <div id="question-container"></div>
 
     <div id="action-buttons">
@@ -114,6 +115,7 @@
         </div>
       `;
       updateSubmitButtonState();
+      renderTracker();
       prevBtn.style.display = currentIndex > 0 ? "inline-block" : "none";
       nextBtn.style.display = currentIndex < questions.length - 1 ? "inline-block" : "none";
     }
@@ -136,8 +138,23 @@
         const idx = parseInt(e.target.name.substring(1));
         responses[idx] = e.target.value;
         updateSubmitButtonState();
+        renderTracker();
       }
     });
+
+    function renderTracker() {
+      const tracker = document.getElementById("question-tracker");
+      tracker.innerHTML = questions.map((_, idx) => {
+        const answered = responses[idx] !== null;
+        const btnClass = answered ? 'answered' : 'unanswered';
+        return `<button onclick="jumpTo(${idx})" class="${btnClass}">${idx + 1}</button>`;
+      }).join(" ");
+    }
+
+    function jumpTo(idx) {
+      currentIndex = idx;
+      showQuestion();
+    }
 
     nextBtn.onclick = () => {
       if (currentIndex < questions.length - 1) {
