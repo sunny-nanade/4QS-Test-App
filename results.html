@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>4QS Results Summary</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link rel="stylesheet" href="style.css" />
   <style>
     .summary {
@@ -23,17 +24,27 @@
       margin-top: 20px;
       color: #333;
     }
-    .scores p {
+    .scores p, .user-info p {
       font-size: 18px;
       margin: 6px 0;
+    }
+    #download-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <div class="summary">
+  <div class="summary" id="resultContent">
     <h1>🎯 Your 4QS Report</h1>
+
+    <div class="user-info" id="userDetails"></div>
+    <hr/>
+
     <div class="scores" id="scoreOutput"></div>
     <canvas id="radarChart"></canvas>
+    <button id="download-btn" onclick="downloadPDF()">📄 Download as PDF</button>
   </div>
 
   <script>
@@ -41,26 +52,48 @@
     const scores = {};
     const scoreOutput = document.getElementById("scoreOutput");
 
-    // Simulate scoring: Assume all answers have 1–5 rating scale or are MCQs (score 1 per answer)
+    // 🧠 Simulated ML-style scoring: scale responses from 0-5 → out of 100
+    function scoreML(responses) {
+      if (!responses || responses.length === 0) return 0;
+      let total = 0;
+      responses.forEach(r => {
+        const val = parseInt(r);
+        if (!isNaN(val)) {
+          total += val;
+        } else {
+          total += 1; // assume MCQ is binary correct
+        }
+      });
+      return Math.round((total / (responses.length * 5)) * 100);
+    }
+
+    // 🚀 Calculate test scores
     tests.forEach(test => {
       const responses = JSON.parse(localStorage.getItem(`${test}_responses`) || "[]");
-      const max = responses.length;
-      const actual = responses.filter(r => r !== null).length;
-
-      const score = (actual / max) * 100;
-      scores[test.toUpperCase()] = Math.round(score);
+      scores[test.toUpperCase()] = scoreML(responses);
     });
 
-    // Compute final 4QS score (average of IQ, EQ, AQ, SQ)
+    // 📊 Compute final 4QS (average of IQ, EQ, AQ, SQ)
     const fourQS = Math.round((scores.IQ + scores.EQ + scores.AQ + scores.SQ) / 4);
 
-    // Output text summary
+    // 👤 User Info
+    const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
+    document.getElementById("userDetails").innerHTML = `
+      <h2>👤 Participant Info</h2>
+      <p><strong>Name:</strong> ${userInfo.name || 'N/A'}</p>
+      <p><strong>Email:</strong> ${userInfo.email || 'N/A'}</p>
+      <p><strong>Age:</strong> ${userInfo.age || 'N/A'}</p>
+      <p><strong>Gender:</strong> ${userInfo.gender || 'N/A'}</p>
+      <p><strong>Profession:</strong> ${userInfo.profession || 'N/A'}</p>
+    `;
+
+    // 📊 Text Summary
     for (const [key, val] of Object.entries(scores)) {
-      scoreOutput.innerHTML += `<p><strong>${key}</strong>: ${val} / 100</p>`;
+      scoreOutput.innerHTML += `<p><strong>${key}:</strong> ${val} / 100</p>`;
     }
     scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
 
-    // Radar chart
+    // 📈 Radar Chart
     new Chart(document.getElementById("radarChart"), {
       type: "radar",
       data: {
@@ -85,6 +118,12 @@
         }
       }
     });
+
+    // 📄 Download as PDF
+    function downloadPDF() {
+      const element = document.getElementById("resultContent");
+      html2pdf().from(element).save(`${userInfo.name || '4QS'}_Result.pdf`);
+    }
   </script>
 </body>
 </html>
