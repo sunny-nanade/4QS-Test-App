@@ -69,7 +69,6 @@
     function scoreIQ(responses) {
       const shownQuestions = JSON.parse(localStorage.getItem("iq_questions_shown") || "[]");
       let correct = 0, attempted = 0;
-
       responses.forEach((r, i) => {
         if (r !== null && r !== "") {
           attempted++;
@@ -78,7 +77,6 @@
           if (userAns === correctAns) correct++;
         }
       });
-
       meta.iq = { attempted, correct };
       return attempted ? Math.round((correct / shownQuestions.length) * 100) : 0;
     }
@@ -167,6 +165,7 @@
         }
       });
 
+      // Submit to Google Sheets
       const payload = {
         timestamp: new Date().toLocaleString(),
         name: userInfo.name,
@@ -182,7 +181,7 @@
         fourqs: fourQS
       };
 
-      fetch("https://script.google.com/macros/s/AKfycbxq2-JS1zAKko-fjxKDJP7PtHOUImRyFOrm5UbiSkk/dev", {
+      fetch("https://script.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
