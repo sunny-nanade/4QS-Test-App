@@ -153,7 +153,6 @@
       localStorage.setItem(`${testName}_responses`, JSON.stringify(responses));
       alert(`✅ Test submitted for ${testName.toUpperCase()}! Responses saved.`);
 
-      // Determine the next test in sequence
       const testOrder = ["iq", "eq", "aq", "sq", "stress"];
       const currentIndexInOrder = testOrder.indexOf(testName);
       const nextTest = testOrder[currentIndexInOrder + 1];
