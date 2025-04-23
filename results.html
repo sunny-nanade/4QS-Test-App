@@ -142,7 +142,6 @@
 
       scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
 
-      // Radar chart
       new Chart(document.getElementById("radarChart"), {
         type: "radar",
         data: {
@@ -168,8 +167,8 @@
         }
       });
 
-      // Send to Google Sheets
       const payload = {
+        timestamp: new Date().toLocaleString(),
         name: userInfo.name,
         email: userInfo.email,
         age: userInfo.age,
@@ -180,11 +179,10 @@
         aq: scores.AQ,
         sq: scores.SQ,
         stress: scores.STRESS,
-        fourqs: fourQS,
-        timestamp: new Date().toLocaleString()
+        fourqs: fourQS
       };
 
-      fetch("https://script.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbxq2-JS1zAKko-fjxKDJP7PtHOUImRyFOrm5UbiSkk/dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -192,7 +190,6 @@
       .then(res => {
         if (res.ok) {
           document.getElementById("sync-status").innerText = "✅ Successfully submitted to Google Sheet!";
-          // Auto-clear localStorage
           ["iq", "eq", "aq", "sq", "stress"].forEach(t => localStorage.removeItem(`${t}_responses`));
           localStorage.removeItem("user_info");
           localStorage.removeItem("iq_questions_shown");
