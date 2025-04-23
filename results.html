@@ -5,10 +5,40 @@
   <title>4QS Results Summary</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .summary {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    canvas {
+      max-width: 100%;
+      margin-top: 30px;
+    }
+    h2 {
+      margin-top: 20px;
+      color: #333;
+    }
+    .scores p, .user-info p {
+      font-size: 18px;
+      margin: 6px 0;
+    }
+  </style>
 </head>
 <body>
   <div class="summary" id="resultContent">
     <h1>🎯 Your 4QS Report</h1>
+
     <div class="user-info" id="userDetails"></div>
     <hr/>
     <div class="scores" id="scoreOutput"></div>
@@ -21,6 +51,7 @@
     const meta = {};
     const scoreOutput = document.getElementById("scoreOutput");
 
+    // Show participant info
     const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
     document.getElementById("userDetails").innerHTML = `
       <h2>👤 Participant Info</h2>
@@ -35,28 +66,30 @@
       const answered = responses.filter(r => r !== null && r !== '');
       let total = 0;
       answered.forEach(r => {
-        const num = Number(r);
-        total += isNaN(num) ? 1 : num;
+        const val = Number(r);
+        total += isNaN(val) ? 1 : val;
       });
-      const maxPossible = answered.length * 5;
+      const max = answered.length * 5;
       meta[test] = { attempted: answered.length };
-      return maxPossible === 0 ? 0 : Math.round((total / maxPossible) * 100);
+      return max ? Math.round((total / max) * 100) : 0;
     }
 
     function scoreIQ(responses) {
-      const questions = JSON.parse(localStorage.getItem("iq_questions_shown") || "[]");
+      const shownQuestions = JSON.parse(localStorage.getItem("iq_questions_shown") || "[]");
       let correct = 0;
       let attempted = 0;
+
       responses.forEach((r, i) => {
         if (r !== null && r !== "") {
           attempted++;
           const userAns = r.trim().toLowerCase();
-          const correctAns = (questions[i]?.answer || "").trim().toLowerCase();
+          const correctAns = (shownQuestions[i]?.answer || "").trim().toLowerCase();
           if (userAns === correctAns) correct++;
         }
       });
+
       meta.iq = { attempted, correct };
-      return questions.length === 0 ? 0 : Math.round((correct / questions.length) * 100);
+      return attempted ? Math.round((correct / shownQuestions.length) * 100) : 0;
     }
 
     async function calculateResults() {
@@ -85,6 +118,7 @@
 
       scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
 
+      // Radar chart
       new Chart(document.getElementById("radarChart"), {
         type: "radar",
         data: {
