@@ -4,16 +4,6 @@
   <meta charset="UTF-8" />
   <title>4QS Test Interface</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    #question-container { margin-top: 20px; }
-    .question-box { margin-bottom: 30px; }
-    .options label, .scale label { display: block; margin: 5px 0; }
-    #timer { font-weight: bold; color: darkred; margin-bottom: 10px; }
-    #test-title { font-size: 1.4rem; margin: 15px 0; text-transform: uppercase; color: #333; }
-    #test-progress { font-size: 1rem; color: #555; margin-bottom: 10px; }
-    #action-buttons button { margin: 5px; }
-    #submitHint { font-size: 0.9em; color: #888; display: block; margin-top: 5px; }
-  </style>
 </head>
 <body>
   <div class="container">
@@ -22,6 +12,7 @@
     <div id="test-progress"></div>
     <div id="timer"></div>
     <div id="question-container"></div>
+
     <div id="action-buttons">
       <button id="prevBtn" style="display:none;">Previous</button>
       <button id="nextBtn" style="display:none;">Next</button>
@@ -122,7 +113,7 @@
           <div class="options">${generateOptions(q, currentIndex)}</div>
         </div>
       `;
-      submitBtn.disabled = responses.includes(null);
+      updateSubmitButtonState();
       prevBtn.style.display = currentIndex > 0 ? "inline-block" : "none";
       nextBtn.style.display = currentIndex < questions.length - 1 ? "inline-block" : "none";
     }
@@ -134,11 +125,17 @@
       `).join("");
     }
 
+    function updateSubmitButtonState() {
+      const allAnswered = responses.every(r => r !== null);
+      submitBtn.disabled = !allAnswered;
+      submitBtn.classList.toggle("ready", allAnswered);
+    }
+
     container.addEventListener("change", e => {
       if (e.target.name.startsWith("q")) {
         const idx = parseInt(e.target.name.substring(1));
         responses[idx] = e.target.value;
-        submitBtn.disabled = responses.includes(null);
+        updateSubmitButtonState();
       }
     });
 
@@ -165,10 +162,6 @@
 
     function submitTest() {
       clearInterval(timer);
-      if (responses.includes(null)) {
-        alert("Please answer all questions.");
-        return;
-      }
       localStorage.setItem(`${testName}_responses`, JSON.stringify(responses));
       goToNextTest();
     }
