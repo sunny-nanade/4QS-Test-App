@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>4QS Test App – Welcome</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Disable right-click
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    // Disable copy & inspect keys
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey && ['c', 'u', 's'].includes(e.key.toLowerCase())) || e.key === 'F12') {
+        e.preventDefault();
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>🧠 Welcome to the 4QS Personality & Stress Test</h1>
+    <p>This self-assessment will help you explore your <strong>Intelligence (IQ)</strong>, <strong>Emotional (EQ)</strong>, <strong>Adversity (AQ)</strong>, <strong>Spiritual (SQ)</strong> quotients and your current <strong>stress levels</strong>.</p>
+    
+    <h2>🔒 Your Privacy</h2>
+    <p>All data is submitted securely and used only for academic or personal development purposes. You will be asked to enter basic details before starting.</p>
+    
+    <label>
+      <input type="checkbox" id="consent" />
+      I agree to participate and allow my data to be used for research/educational insights.
+    </label>
+
+    <br><br>
+    <button onclick="startTest()">Start the Test</button>
+  </div>
+
+  <footer>
+    <p>© 2025 Sunny Nanade • Licensed under CC BY-NC-ND 4.0</p>
+  </footer>
+
+  <script>
+    function startTest() {
+      const consent = document.getElementById('consent').checked;
+      if (!consent) {
+        alert("Please check the consent box to proceed.");
+        return;
+      }
+      window.location.href = "info.html";
+    }
+  </script>
+</body>
+</html>
