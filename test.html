@@ -38,6 +38,7 @@
     const submitBtn = document.getElementById("submitBtn");
     const skipBtn = document.getElementById("skipBtn");
     const exitBtn = document.getElementById("exitBtn");
+    const actionButtons = document.getElementById("action-buttons");
 
     let questions = [], currentIndex = 0, responses = [], testName = "", maxQuestions = 20;
     let timer, timeLeft = 0;
@@ -65,6 +66,7 @@
       testName = urlParams.get('test');
       if (!testName || !sources[testName]) {
         container.innerHTML = "<p style='color:red;'>Test not specified. Append ?test=iq or ?test=eq etc. in URL.</p>";
+        actionButtons.style.display = "none";
         return;
       }
 
@@ -74,21 +76,32 @@
       footer.textContent = sources[testName];
       timeLeft = durations[testName];
 
-      fetch(`questions/${testName}.json`).then(res => res.json()).then(all => {
-        maxQuestions = testName === "stress" ? 10 : 20;
-        questions = all.sort(() => 0.5 - Math.random()).slice(0, maxQuestions);
-        if (testName === 'iq') {
-          localStorage.setItem("iq_questions_shown", JSON.stringify(questions));
-        }
-        responses = new Array(questions.length).fill(null);
-        currentIndex = 0;
-        startTimer();
-        showQuestion();
-        nextBtn.style.display = "inline-block";
-        prevBtn.style.display = "inline-block";
-        skipBtn.style.display = "inline-block";
-        exitBtn.style.display = "inline-block";
-      });
+      fetch(`questions/${testName}.json`)
+        .then(res => res.json())
+        .then(all => {
+          maxQuestions = testName === "stress" ? 15 : 20;
+          questions = all.sort(() => 0.5 - Math.random()).slice(0, maxQuestions);
+
+          if (!questions.length) {
+            container.innerHTML = "<p style='color:red;'>No questions found for this test. Please contact the administrator.</p>";
+            actionButtons.style.display = "none";
+            return;
+          }
+
+          if (testName === 'iq') {
+            localStorage.setItem("iq_questions_shown", JSON.stringify(questions));
+          }
+
+          responses = new Array(questions.length).fill(null);
+          currentIndex = 0;
+          startTimer();
+          showQuestion();
+
+          nextBtn.style.display = "inline-block";
+          prevBtn.style.display = "inline-block";
+          skipBtn.style.display = "inline-block";
+          exitBtn.style.display = "inline-block";
+        });
     };
 
     function startTimer() {
@@ -175,13 +188,19 @@
     };
 
     submitBtn.onclick = () => {
-      if (!submitBtn.disabled) submitTest();
+      submitTest();
     };
 
     skipBtn.onclick = () => goToNextTest();
     exitBtn.onclick = () => window.location.href = "results.html";
 
     function submitTest() {
+      const allAnswered = responses.every(r => r !== null);
+      if (!allAnswered) {
+        alert("Please answer all questions before submitting.");
+        return;
+      }
+
       clearInterval(timer);
       localStorage.setItem(`${testName}_responses`, JSON.stringify(responses));
       goToNextTest();
