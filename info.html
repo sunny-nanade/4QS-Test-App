@@ -15,20 +15,25 @@
       <label>Email Address:</label><br>
       <input type="email" name="email" required><br><br>
 
-      <label>Age:</label><br>
-      <input type="number" name="age" required><br><br>
+      <label>Age Range:</label><br>
+      <label><input type="radio" name="age" value="Under 18" required> Under 18</label><br>
+      <label><input type="radio" name="age" value="18–25"> 18–25</label><br>
+      <label><input type="radio" name="age" value="26–35"> 26–35</label><br>
+      <label><input type="radio" name="age" value="36–45"> 36–45</label><br>
+      <label><input type="radio" name="age" value="46 and above"> 46 and above</label><br><br>
 
       <label>Gender:</label><br>
-      <select name="gender" required>
-        <option value="" disabled selected>Select</option>
-        <option value="Female">Female</option>
-        <option value="Male">Male</option>
-        <option value="Non-binary">Non-binary</option>
-        <option value="Prefer not to say">Prefer not to say</option>
-      </select><br><br>
+      <label><input type="radio" name="gender" value="Female" required> Female</label><br>
+      <label><input type="radio" name="gender" value="Male"> Male</label><br>
+      <label><input type="radio" name="gender" value="Non-binary"> Non-binary</label><br>
+      <label><input type="radio" name="gender" value="Prefer not to say"> Prefer not to say</label><br><br>
 
       <label>Profession / Role:</label><br>
-      <input type="text" name="profession" required><br><br>
+      <label><input type="radio" name="profession" value="Student" required> Student</label><br>
+      <label><input type="radio" name="profession" value="Educator"> Educator</label><br>
+      <label><input type="radio" name="profession" value="Working Professional"> Working Professional</label><br>
+      <label><input type="radio" name="profession" value="Entrepreneur"> Entrepreneur</label><br>
+      <label><input type="radio" name="profession" value="Other"> Other</label><br><br>
 
       <button type="submit">Start Test</button>
     </form>
