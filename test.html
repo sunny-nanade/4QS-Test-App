@@ -9,18 +9,25 @@
     .question-box { margin-bottom: 30px; }
     .options label, .scale label { display: block; margin: 5px 0; }
     #timer { font-weight: bold; color: darkred; margin-bottom: 10px; }
-    #test-title { font-size: 1.2rem; margin-top: 20px; }
+    #test-title { font-size: 1.4rem; margin: 15px 0; text-transform: uppercase; color: #333; }
+    #test-progress { font-size: 1rem; color: #555; margin-bottom: 10px; }
+    #action-buttons button { margin: 5px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🧪 4QS Test</h1>
+    <h1>🧪 4QS Assessment</h1>
     <div id="test-title"></div>
+    <div id="test-progress"></div>
     <div id="timer"></div>
     <div id="question-container"></div>
-    <button id="prevBtn" style="display:none;">Previous</button>
-    <button id="nextBtn" style="display:none;">Next</button>
-    <button id="submitBtn" style="display:none;">Submit</button>
+    <div id="action-buttons">
+      <button id="prevBtn" style="display:none;">Previous</button>
+      <button id="nextBtn" style="display:none;">Next</button>
+      <button id="submitBtn" style="display:none;">Submit</button>
+      <button id="skipBtn" style="display:none;">Skip & Next</button>
+      <button id="exitBtn" style="display:none;">Exit & View Results</button>
+    </div>
   </div>
 
   <footer id="test-source" style="margin-top: 40px; text-align:center; font-size: 14px;"></footer>
@@ -30,10 +37,13 @@
     const footer = document.getElementById("test-source");
     const timerDisplay = document.getElementById("timer");
     const testTitle = document.getElementById("test-title");
+    const testProgress = document.getElementById("test-progress");
 
     const nextBtn = document.getElementById("nextBtn");
     const prevBtn = document.getElementById("prevBtn");
     const submitBtn = document.getElementById("submitBtn");
+    const skipBtn = document.getElementById("skipBtn");
+    const exitBtn = document.getElementById("exitBtn");
 
     let questions = [], currentIndex = 0, responses = [], testName = "", maxQuestions = 20;
     let timer, timeLeft = 0;
@@ -54,6 +64,8 @@
       stress: 4 * 60
     };
 
+    const testOrder = ["iq", "eq", "aq", "sq", "stress"];
+
     window.onload = () => {
       const urlParams = new URLSearchParams(window.location.search);
       testName = urlParams.get('test');
@@ -61,7 +73,9 @@
         container.innerHTML = "<p style='color:red;'>Test not specified. Append ?test=iq or ?test=eq etc. in URL.</p>";
         return;
       }
-      testTitle.innerText = `${testName.toUpperCase()} Test`;
+      const testIndex = testOrder.indexOf(testName);
+      testTitle.innerText = `🧠 CURRENT: ${testName.toUpperCase()} TEST`;
+      testProgress.innerText = `Test ${testIndex + 1} of ${testOrder.length}`;
       footer.textContent = sources[testName];
       timeLeft = durations[testName];
 
@@ -74,6 +88,8 @@
         showQuestion();
         nextBtn.style.display = "inline-block";
         prevBtn.style.display = "inline-block";
+        skipBtn.style.display = "inline-block";
+        exitBtn.style.display = "inline-block";
       });
     };
 
@@ -138,9 +154,9 @@
       }
     };
 
-    submitBtn.onclick = () => {
-      submitTest();
-    };
+    submitBtn.onclick = () => submitTest();
+    skipBtn.onclick = () => goToNextTest();
+    exitBtn.onclick = () => window.location.href = "results.html";
 
     function submitTest() {
       clearInterval(timer);
@@ -148,17 +164,19 @@
         alert("Please answer all questions.");
         return;
       }
-
       localStorage.setItem(`${testName}_responses`, JSON.stringify(responses));
+      goToNextTest();
+    }
 
-      const testOrder = ["iq", "eq", "aq", "sq", "stress"];
+    function goToNextTest() {
       const currentIndexInOrder = testOrder.indexOf(testName);
       const nextTest = testOrder[currentIndexInOrder + 1];
-
+      if (responses.some(r => r !== null)) {
+        localStorage.setItem(`${testName}_responses`, JSON.stringify(responses));
+      }
       if (nextTest) {
         window.location.href = `test.html?test=${nextTest}`;
       } else {
-        // Only show results page after completing all tests
         window.location.href = "results.html";
       }
     }
