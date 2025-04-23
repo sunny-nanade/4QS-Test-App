@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>4QS Results Summary</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .summary {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    canvas {
+      max-width: 100%;
+      margin-top: 30px;
+    }
+    h2 {
+      margin-top: 20px;
+      color: #333;
+    }
+    .scores p {
+      font-size: 18px;
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="summary">
+    <h1>🎯 Your 4QS Report</h1>
+    <div class="scores" id="scoreOutput"></div>
+    <canvas id="radarChart"></canvas>
+  </div>
+
+  <script>
+    const tests = ["iq", "eq", "aq", "sq", "stress"];
+    const scores = {};
+    const scoreOutput = document.getElementById("scoreOutput");
+
+    // Simulate scoring: Assume all answers have 1–5 rating scale or are MCQs (score 1 per answer)
+    tests.forEach(test => {
+      const responses = JSON.parse(localStorage.getItem(`${test}_responses`) || "[]");
+      const max = responses.length;
+      const actual = responses.filter(r => r !== null).length;
+
+      const score = (actual / max) * 100;
+      scores[test.toUpperCase()] = Math.round(score);
+    });
+
+    // Compute final 4QS score (average of IQ, EQ, AQ, SQ)
+    const fourQS = Math.round((scores.IQ + scores.EQ + scores.AQ + scores.SQ) / 4);
+
+    // Output text summary
+    for (const [key, val] of Object.entries(scores)) {
+      scoreOutput.innerHTML += `<p><strong>${key}</strong>: ${val} / 100</p>`;
+    }
+    scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
+
+    // Radar chart
+    new Chart(document.getElementById("radarChart"), {
+      type: "radar",
+      data: {
+        labels: ["IQ", "EQ", "AQ", "SQ", "Stress"],
+        datasets: [{
+          label: "Your Score",
+          data: [scores.IQ, scores.EQ, scores.AQ, scores.SQ, scores.STRESS],
+          fill: true,
+          borderColor: "#007bff",
+          backgroundColor: "rgba(0, 123, 255, 0.2)",
+          pointBackgroundColor: "#007bff"
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            angleLines: { display: true },
+            suggestedMin: 0,
+            suggestedMax: 100
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
