@@ -38,10 +38,8 @@
 <body>
   <div class="summary" id="resultContent">
     <h1>🎯 Your 4QS Report</h1>
-
     <div class="user-info" id="userDetails"></div>
     <hr/>
-
     <div class="scores" id="scoreOutput"></div>
     <canvas id="radarChart"></canvas>
   </div>
@@ -49,40 +47,9 @@
   <script>
     const tests = ["iq", "eq", "aq", "sq", "stress"];
     const scores = {};
+    const meta = {}; // Store attempted/correct per test
     const scoreOutput = document.getElementById("scoreOutput");
 
-    // ✅ Updated ML-style scoring logic
-    function scoreML(responses) {
-      if (!responses || responses.length === 0) return 0;
-
-      const answered = responses.filter(r => r !== null && r !== '');
-      if (answered.length === 0) return 0;
-
-      let total = 0;
-
-      answered.forEach(r => {
-        const num = Number(r);
-        if (!isNaN(num)) {
-          total += num; // Likert 1–5
-        } else {
-          total += 1;   // MCQ fallback (e.g., "Agree", "True")
-        }
-      });
-
-      const maxPossible = answered.length * 5;
-      return maxPossible === 0 ? 0 : Math.round((total / maxPossible) * 100);
-    }
-
-    // Calculate each test score
-    tests.forEach(test => {
-      const responses = JSON.parse(localStorage.getItem(`${test}_responses`) || "[]");
-      scores[test.toUpperCase()] = scoreML(responses);
-    });
-
-    // Compute final 4QS (average of IQ, EQ, AQ, SQ)
-    const fourQS = Math.round((scores.IQ + scores.EQ + scores.AQ + scores.SQ) / 4);
-
-    // 👤 Load participant info
     const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
     document.getElementById("userDetails").innerHTML = `
       <h2>👤 Participant Info</h2>
@@ -93,37 +60,97 @@
       <p><strong>Profession:</strong> ${userInfo.profession || 'N/A'}</p>
     `;
 
-    // Display scores
-    for (const [key, val] of Object.entries(scores)) {
-      scoreOutput.innerHTML += `<p><strong>${key}:</strong> ${val} / 100</p>`;
-    }
-    scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
+    // Score Likert-style tests
+    function scoreLikert(responses, test) {
+      const answered = responses.filter(r => r !== null && r !== '');
+      let total = 0;
 
-    // Render radar chart
-    new Chart(document.getElementById("radarChart"), {
-      type: "radar",
-      data: {
-        labels: ["IQ", "EQ", "AQ", "SQ", "Stress"],
-        datasets: [{
-          label: "Your Score",
-          data: [scores.IQ, scores.EQ, scores.AQ, scores.SQ, scores.STRESS],
-          fill: true,
-          borderColor: "#007bff",
-          backgroundColor: "rgba(0, 123, 255, 0.2)",
-          pointBackgroundColor: "#007bff"
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          r: {
-            angleLines: { display: true },
-            suggestedMin: 0,
-            suggestedMax: 100
-          }
+      answered.forEach(r => {
+        const num = Number(r);
+        if (!isNaN(num)) total += num;
+        else total += 1;
+      });
+
+      const maxPossible = answered.length * 5;
+      meta[test] = { attempted: answered.length };
+      return maxPossible === 0 ? 0 : Math.round((total / maxPossible) * 100);
+    }
+
+    // Score IQ using answer key from iq.json
+    async function scoreIQ(responses) {
+      const res = await fetch('questions/iq.json');
+      const questions = await res.json();
+      let correct = 0;
+      let attempted = 0;
+
+      responses.forEach((r, i) => {
+        if (r !== null && r !== "") {
+          attempted++;
+          const userAns = r.trim().toLowerCase();
+          const correctAns = (questions[i]?.answer || "").trim().toLowerCase();
+          if (userAns === correctAns) correct++;
+        }
+      });
+
+      meta.iq = { attempted, correct };
+      return Math.round((correct / questions.length) * 100);
+    }
+
+    // Main logic
+    async function calculateResults() {
+      for (const test of tests) {
+        const responses = JSON.parse(localStorage.getItem(`${test}_responses`) || "[]");
+        if (test === "iq") {
+          scores.IQ = await scoreIQ(responses);
+        } else {
+          scores[test.toUpperCase()] = scoreLikert(responses, test);
         }
       }
-    });
+
+      const fourQS = Math.round((scores.IQ + scores.EQ + scores.AQ + scores.SQ) / 4);
+
+      for (const [key, val] of Object.entries(scores)) {
+        scoreOutput.innerHTML += `<p><strong>${key}:</strong> ${val} / 100</p>`;
+        if (meta[key.toLowerCase()]) {
+          const m = meta[key.toLowerCase()];
+          scoreOutput.innerHTML += `<p>Attempted: ${m.attempted || 0}</p>`;
+          if (m.correct !== undefined) {
+            scoreOutput.innerHTML += `<p>Correct: ${m.correct}</p>`;
+          }
+        }
+        scoreOutput.innerHTML += `<br/>`;
+      }
+
+      scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
+
+      // Chart
+      new Chart(document.getElementById("radarChart"), {
+        type: "radar",
+        data: {
+          labels: ["IQ", "EQ", "AQ", "SQ", "Stress"],
+          datasets: [{
+            label: "Your Score",
+            data: [scores.IQ, scores.EQ, scores.AQ, scores.SQ, scores.STRESS],
+            fill: true,
+            borderColor: "#007bff",
+            backgroundColor: "rgba(0, 123, 255, 0.2)",
+            pointBackgroundColor: "#007bff"
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            r: {
+              angleLines: { display: true },
+              suggestedMin: 0,
+              suggestedMax: 100
+            }
+          }
+        }
+      });
+    }
+
+    calculateResults();
   </script>
 </body>
 </html>
