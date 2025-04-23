@@ -75,7 +75,7 @@
         nextBtn.style.display = "inline-block";
         prevBtn.style.display = "inline-block";
       });
-    }
+    };
 
     function startTimer() {
       updateTimerDisplay();
@@ -149,9 +149,20 @@
         alert("Please answer all questions.");
         return;
       }
+
       localStorage.setItem(`${testName}_responses`, JSON.stringify(responses));
       alert(`✅ Test submitted for ${testName.toUpperCase()}! Responses saved.`);
-      window.location.href = "results.html?test=" + testName;
+
+      // Determine the next test in sequence
+      const testOrder = ["iq", "eq", "aq", "sq", "stress"];
+      const currentIndexInOrder = testOrder.indexOf(testName);
+      const nextTest = testOrder[currentIndexInOrder + 1];
+
+      if (nextTest) {
+        window.location.href = `test.html?test=${nextTest}`;
+      } else {
+        window.location.href = "results.html";
+      }
     }
   </script>
 </body>
