@@ -115,11 +115,6 @@
     "answer": "2"
   },
   {
-    "question": "If triangle has 3 sides, hexagon has:",
-    "options": ["4", "5", "6", "7"],
-    "answer": "6"
-  },
-  {
     "question": "Which is a leap year?",
     "options": ["2021", "2022", "2023", "2024"],
     "answer": "2024"
@@ -128,5 +123,40 @@
     "question": "Which one is NOT a mammal?",
     "options": ["Whale", "Dolphin", "Shark", "Bat"],
     "answer": "Shark"
+  },
+  {
+    "question": "If CAT is coded as DBU, what is the code for DOG?",
+    "options": ["DPE", "EPI", "EPH", "DHF"],
+    "answer": "EPH"
+  },
+  {
+    "question": "What is 9 × 7?",
+    "options": ["63", "56", "72", "49"],
+    "answer": "63"
+  },
+  {
+    "question": "If a clock is rotated 90° clockwise, where will 12 point?",
+    "options": ["3", "6", "9", "12"],
+    "answer": "3"
+  },
+  {
+    "question": "Rearrange: POST is to STOP as 4721 is to?",
+    "options": ["1742", "4721", "1274", "4172"],
+    "answer": "1742"
+  },
+  {
+    "question": "If Monday is the 1st day of the month, what day is the 8th?",
+    "options": ["Monday", "Tuesday", "Sunday", "Wednesday"],
+    "answer": "Monday"
+  },
+  {
+    "question": "How many hours in 3 days?",
+    "options": ["48", "60", "72", "96"],
+    "answer": "72"
+  },
+  {
+    "question": "Which figure does not belong: Circle, Square, Triangle, Cube?",
+    "options": ["Circle", "Square", "Triangle", "Cube"],
+    "answer": "Cube"
   }
 ]
