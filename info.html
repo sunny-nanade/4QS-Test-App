@@ -1,21 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>4QS Test – Participant Details</title>
-  <link rel="stylesheet" href="style.css">
-  <script>
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('keydown', function (e) {
-      if ((e.ctrlKey && ['c', 'u', 's'].includes(e.key.toLowerCase())) || e.key === 'F12') {
-        e.preventDefault();
-      }
-    });
-  </script>
+  <meta charset="UTF-8" />
+  <title>4QS Test – Participant Info</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>📝 Participant Details</h1>
+    <h1>👤 Participant Details</h1>
     <form id="infoForm">
       <label>Full Name:</label><br>
       <input type="text" name="name" required><br><br>
@@ -28,39 +20,32 @@
 
       <label>Gender:</label><br>
       <select name="gender" required>
-        <option value="" disabled selected>Select your gender</option>
+        <option value="" disabled selected>Select</option>
         <option value="Female">Female</option>
         <option value="Male">Male</option>
         <option value="Non-binary">Non-binary</option>
         <option value="Prefer not to say">Prefer not to say</option>
       </select><br><br>
 
-      <label>Education Level:</label><br>
-      <input type="text" name="education" required><br><br>
-
       <label>Profession / Role:</label><br>
       <input type="text" name="profession" required><br><br>
 
-      <button type="submit">Continue to Test</button>
+      <button type="submit">Start Test</button>
     </form>
   </div>
 
-  <footer>
-    <p>© 2025 Sunny Nanade – All rights reserved</p>
+  <footer style="margin-top: 40px; text-align:center; font-size: 14px;">
+    © 2025 Sunny Nanade – All rights reserved
   </footer>
 
   <script>
     document.getElementById('infoForm').addEventListener('submit', function(e) {
       e.preventDefault();
-
-      // Save data in localStorage for later use
       const formData = new FormData(this);
       for (const [key, value] of formData.entries()) {
-        localStorage.setItem(key, value);
+        localStorage.setItem(`user_${key}`, value);
       }
-
-      // Redirect to test interface
-      window.location.href = "test.html";
+      window.location.href = "test.html?test=iq";
     });
   </script>
 </body>
