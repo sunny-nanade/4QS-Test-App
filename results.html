@@ -125,9 +125,16 @@
           const labelPrefix = test.toUpperCase() + " - ";
           scores[test.toUpperCase()] = await scoreComposite(test, labelPrefix);
         }
+        // Ensure a score is set even if test is skipped
+        if (!scores[test.toUpperCase()]) {
+          scores[test.toUpperCase()] = 0;
+          meta[test.toLowerCase()] = { attempted: 0 };
+        }
       }
 
-      const fourQS = Math.round((scores.IQ + scores.EQ + scores.AQ + scores.SQ) / 4);
+      // Calculate fourQS only with available scores
+      const validScores = [scores.IQ, scores.EQ, scores.AQ, scores.SQ].filter(s => s !== undefined && s !== null);
+      const fourQS = validScores.length ? Math.round(validScores.reduce((sum, s) => sum + s, 0) / validScores.length) : 0;
 
       for (const [key, val] of Object.entries(scores)) {
         scoreOutput.innerHTML += `<p><strong>${key}:</strong> ${val} / 100</p>`;
@@ -149,7 +156,7 @@
           labels: ["IQ", "EQ", "AQ", "SQ", "Stress"],
           datasets: [{
             label: "Your Score",
-            data: [scores.IQ, scores.EQ, scores.AQ, scores.SQ, scores.STRESS],
+            data: [scores.IQ || 0, scores.EQ || 0, scores.AQ || 0, scores.SQ || 0, scores.STRESS || 0],
             fill: true,
             borderColor: "#007bff",
             backgroundColor: "rgba(0, 123, 255, 0.2)",
@@ -194,9 +201,6 @@
         ["iq", "eq", "aq", "sq", "stress"].forEach(t => localStorage.removeItem(`${t}_responses`));
         localStorage.removeItem("user_info");
         localStorage.removeItem("iq_questions_shown");
-        setTimeout(() => {
-          window.location.href = "thank-you.html";
-        }, 2000);
       } catch (error) {
         console.error("Fetch error:", error.message, error.stack);
         document.getElementById("sync-status").innerText = `⚠️ Could not connect to Google Sheets: ${error.message}. Please use Chrome or disable tracking prevention in your browser settings (Safari: Privacy > Prevent cross-site tracking; Edge: Privacy > Tracking prevention > Set to Balanced or Basic).`;
