@@ -182,14 +182,14 @@
         fourqs: fourQS || 0
       };
 
-      fetch("https://script.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
-        method: "POST",
-        mode: "cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(data => {
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
         if (data.status === "success") {
           document.getElementById("sync-status").innerText = "✅ Successfully submitted to Google Sheet!";
           localStorage.setItem("submitted", "true");
@@ -202,11 +202,10 @@
         } else {
           document.getElementById("sync-status").innerText = "⚠️ Submission failed: " + data.message;
         }
-      })
-      .catch(error => {
-        console.error("Fetch error:", error);
-        document.getElementById("sync-status").innerText = "⚠️ Could not connect to Google Sheets: " + error.message;
-      });
+      } catch (error) {
+        console.error("Fetch error:", error.message, error.stack);
+        document.getElementById("sync-status").innerText = `⚠️ Could not connect to Google Sheets: ${error.message}. Please check your browser's privacy settings or try a different browser.`;
+      }
     }
 
     calculateResults();
