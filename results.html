@@ -94,7 +94,7 @@
         const val = ["Strongly Disagree", "Disagree", "Neutral", " Agree", "Strongly Agree",
                      "Never", "Rarely", "Sometimes", "Often", "Very Often"].indexOf(r) % 5 + 1;
         const score = reverse ? 6 - val : val;
-        composites[comp] = (composites[comp] || 0) + score;
+        composites[comp] = (composites[com] || 0) + score;
         attempts[comp] = (attempts[comp] || 0) + 1;
       });
 
@@ -204,7 +204,7 @@
         }
       } catch (error) {
         console.error("Fetch error:", error.message, error.stack);
-        document.getElementById("sync-status").innerText = `⚠️ Could not connect to Google Sheets: ${error.message}. Please check your browser's privacy settings or try a different browser.`;
+        document.getElementById("sync-status").innerText = `⚠️ Could not connect to Google Sheets: ${error.message}. Try disabling tracking prevention in your browser settings (e.g., Safari: Privacy > Prevent cross-site tracking; Edge: Privacy > Tracking prevention) or use Chrome.`;
       }
     }
 
