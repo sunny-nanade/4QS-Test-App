@@ -112,6 +112,11 @@
     }
 
     async function calculateResults() {
+      if (localStorage.getItem("submitted")) {
+        document.getElementById("sync-status").innerText = "✅ Already submitted!";
+        return;
+      }
+
       for (const test of tests) {
         const responses = JSON.parse(localStorage.getItem(`${test}_responses`) || "[]");
         if (test === "iq") {
@@ -164,22 +169,23 @@
       });
 
       const payload = {
-        timestamp: new Date().toLocaleString(),
-        name: userInfo.name,
-        email: userInfo.email,
-        age: userInfo.age,
-        gender: userInfo.gender,
-        profession: userInfo.profession,
-        iq: scores.IQ,
-        eq: scores.EQ,
-        aq: scores.AQ,
-        sq: scores.SQ,
-        stress: scores.STRESS,
-        fourqs: fourQS
+        name: userInfo.name || "N/A",
+        email: userInfo.email || "N/A",
+        age: userInfo.age || "N/A",
+        gender: userInfo.gender || "N/A",
+        profession: userInfo.profession || "N/A",
+        iq: scores.IQ || 0,
+        eq: scores.EQ || 0,
+        aq: scores.AQ || 0,
+        sq: scores.SQ || 0,
+        stress: scores.STRESS || 0,
+        fourqs: fourQS || 0
       };
 
-      fetch("https://script.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
+      fetch("https://scrip
+t.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
         method: "POST",
+        mode: "cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       })
@@ -187,15 +193,20 @@
       .then(data => {
         if (data.status === "success") {
           document.getElementById("sync-status").innerText = "✅ Successfully submitted to Google Sheet!";
+          localStorage.setItem("submitted", "true");
           ["iq", "eq", "aq", "sq", "stress"].forEach(t => localStorage.removeItem(`${t}_responses`));
           localStorage.removeItem("user_info");
           localStorage.removeItem("iq_questions_shown");
+          setTimeout(() => {
+            window.location.href = "thank-you.html";
+          }, 2000);
         } else {
           document.getElementById("sync-status").innerText = "⚠️ Submission failed: " + data.message;
         }
       })
-      .catch(() => {
-        document.getElementById("sync-status").innerText = "⚠️ Could not connect to Google Sheets.";
+      .catch(error => {
+        console.error("Fetch error:", error);
+        document.getElementById("sync-status").innerText = "⚠️ Could not connect to Google Sheets: " + error.message;
       });
     }
 
