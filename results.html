@@ -91,7 +91,7 @@
         if (!r || !questions[i]) return;
         const comp = questions[i].composite || "General";
         const reverse = questions[i].reverse;
-        const val = ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree",
+        const val = ["Strongly Disagree", "Disagree", "Neutral", " Agree", "Strongly Agree",
                      "Never", "Rarely", "Sometimes", "Often", "Very Often"].indexOf(r) % 5 + 1;
         const score = reverse ? 6 - val : val;
         composites[comp] = (composites[comp] || 0) + score;
@@ -182,8 +182,7 @@
         fourqs: fourQS || 0
       };
 
-      fetch("https://scrip
-t.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
         method: "POST",
         mode: "cors",
         headers: { "Content-Type": "application/json" },
