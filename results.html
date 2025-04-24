@@ -3,84 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <title>4QS Results Summary</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css" />
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
     .summary {
-      max-width: 750px;
-      margin: 40px auto;
-      padding: 25px;
-      background-color: #ffffff;
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
       border-radius: 8px;
-      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       text-align: center;
     }
     canvas {
       max-width: 100%;
       margin-top: 30px;
-      height: auto;
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: #0056b3;
     }
     h2 {
-      margin-top: 25px;
-      margin-bottom: 10px;
-      color: #5a5a5a;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 5px;
-      text-align: left;
-    }
-    .scores p, .user-info p {
-      font-size: 1.1em;
-      margin: 8px 0;
-      text-align: left;
-    }
-    .user-info {
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
-    }
-    .scores {
       margin-top: 20px;
-    }
-    .scores strong {
-      display: inline-block;
-      min-width: 180px;
       color: #333;
     }
-    .final-score {
-      font-size: 1.3em;
-      font-weight: bold;
-      color: #0056b3;
-      margin-top: 20px;
-      padding-top: 15px;
-      border-top: 1px solid #eee;
-      text-align: center;
+    .scores p, .user-info p {
+      font-size: 18px;
+      margin: 6px 0;
     }
     #sync-status {
-      margin-top: 25px;
-      padding: 10px;
-      border-radius: 5px;
+      margin-top: 20px;
+      color: green;
       font-weight: bold;
-      text-align: center;
-    }
-    .sync-success {
-      color: #155724;
-      background-color: #d4edda;
-      border: 1px solid #c3e6cb;
-    }
-    .sync-error {
-      color: #721c24;
-      background-color: #f8d7da;
-      border: 1px solid #f5c6cb;
-    }
-    hr {
-      border: none;
-      border-top: 1px solid #eee;
-      margin: 20px 0;
     }
   </style>
 </head>
@@ -88,107 +44,107 @@
   <div class="summary" id="resultContent">
     <h1>🎯 Your 4QS Report</h1>
     <div class="user-info" id="userDetails"></div>
+    <hr/>
     <div class="scores" id="scoreOutput"></div>
     <canvas id="radarChart"></canvas>
     <div id="sync-status"></div>
   </div>
 
   <script>
-    const TESTS = ["iq", "eq", "aq", "sq", "stress"];
-    const GOOGLE_SCRIPT_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLjjy6uiAMcUKHKMWE5LRIW1Ry_29hqYuHcKCs0dWxjB7c08jes1jVH_vLixo8YEG-K304goRvb3jpG60rnkmi9plteA22q_Xe4K2aOB7EUj8xstnUHNqjIjmAJYvmNHCqhIAmL6pjRt9Wj_COcmxZbW9-z5pqePRTbx5V8pS4bqTqah9UwE8lRWa16BNizMkZjByHH_nhUD3g6MGvI8ie9btUdFygaJ45JBfgyhumvWc7LhQI00LSmi10LpiQ&lib=MC-w43-cGRgZ9g3cyVlOBSPoH_GRKR_iH";
-    const userDetailsDiv = document.getElementById("userDetails");
-    const scoreOutputDiv = document.getElementById("scoreOutput");
-    const syncStatusDiv = document.getElementById("sync-status");
-    const chartCanvas = document.getElementById("radarChart");
+    const tests = ["iq", "eq", "aq", "sq", "stress"];
+    const scores = {};
+    const meta = {};
+    const scoreOutput = document.getElementById("scoreOutput");
 
-    function getStoredJson(key, defaultValue = null) {
-      try {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultValue;
-      } catch {
-        return defaultValue;
-      }
-    }
+    const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
+    document.getElementById("userDetails").innerHTML = `
+      <h2>👤 Participant Info</h2>
+      <p><strong>Name:</strong> ${userInfo.name || 'N/A'}</p>
+      <p><strong>Email:</strong> ${userInfo.email || 'N/A'}</p>
+      <p><strong>Age:</strong> ${userInfo.age || 'N/A'}</p>
+      <p><strong>Gender:</strong> ${userInfo.gender || 'N/A'}</p>
+      <p><strong>Profession:</strong> ${userInfo.profession || 'N/A'}</p>
+    `;
 
-    function displayUserInfo(user) {
-      userDetailsDiv.innerHTML = `
-        <h2>👤 Participant Info</h2>
-        <p><strong>Name:</strong> ${user.name || 'N/A'}</p>
-        <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
-        <p><strong>Age:</strong> ${user.age || 'N/A'}</p>
-        <p><strong>Gender:</strong> ${user.gender || 'N/A'}</p>
-        <p><strong>Profession:</strong> ${user.profession || 'N/A'}</p>`;
-    }
-
-    function scoreIQ(responses, shownQuestions) {
-      if (!responses || !shownQuestions || shownQuestions.length === 0) return { score: 0, attempted: 0, correct: 0 };
+    function scoreIQ(responses) {
+      const shownQuestions = JSON.parse(localStorage.getItem("iq_questions_shown") || "[]");
       let correct = 0, attempted = 0;
       responses.forEach((r, i) => {
-        if (r && i < shownQuestions.length) {
+        if (r !== null && r !== "") {
           attempted++;
-          if (r.trim().toLowerCase() === shownQuestions[i]?.answer?.trim().toLowerCase()) correct++;
+          const userAns = r.trim().toLowerCase();
+          const correctAns = (shownQuestions[i]?.answer || "").trim().toLowerCase();
+          if (userAns === correctAns) correct++;
         }
       });
-      return { score: Math.round((correct / shownQuestions.length) * 100), attempted, correct };
+      meta.iq = { attempted, correct };
+      return attempted ? Math.round((correct / shownQuestions.length) * 100) : 0;
     }
 
     async function scoreComposite(testName, labelPrefix = "") {
-      const responses = getStoredJson(`${testName}_responses`, []);
-      let questions = [];
-      try {
-        const res = await fetch(`questions/${testName}.json`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        questions = await res.json();
-      } catch {
-        scoreOutputDiv.innerHTML += `<p class="sync-error">⚠️ Failed to load ${testName}.json</p>`;
-        return { score: 0, attempted: 0 };
-      }
+      const res = await fetch(`questions/${testName}.json`);
+      const questions = await res.json();
+      const responses = JSON.parse(localStorage.getItem(`${testName}_responses`) || "[]");
+      const composites = {}, attempts = {};
 
-      const scale = { "Strongly Disagree": 1, "Disagree": 2, "Neutral": 3, "Agree": 4, "Strongly Agree": 5, "Never": 1, "Rarely": 2, "Sometimes": 3, "Often": 4, "Very Often": 5 };
-      const compScores = {}, composites = {};
-      let attempted = 0;
-
-      responses.forEach((response, i) => {
-        const q = questions[i];
-        const val = scale[response] || 0;
-        if (val && q) {
-          attempted++;
-          const score = q.reverse ? 6 - val : val;
-          const comp = q.composite || "General";
-          if (!compScores[comp]) compScores[comp] = { total: 0, count: 0 };
-          compScores[comp].total += score;
-          compScores[comp].count++;
-        }
+      responses.forEach((r, i) => {
+        if (!r || !questions[i]) return;
+        const comp = questions[i].composite || "General";
+        const reverse = questions[i].reverse;
+        const val = ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree",
+                     "Never", "Rarely", "Sometimes", "Often", "Very Often"].indexOf(r) % 5 + 1;
+        const score = reverse ? 6 - val : val;
+        composites[comp] = (composites[comp] || 0) + score;
+        attempts[comp] = (attempts[comp] || 0) + 1;
       });
 
-      let sum = 0, count = 0;
-      for (const c in compScores) {
-        const percent = Math.round((compScores[c].total / (compScores[c].count * 5)) * 100);
-        composites[c] = percent;
-        scoreOutputDiv.innerHTML += `<p><strong>${labelPrefix}${c}:</strong> ${percent} / 100</p>`;
-        sum += percent;
+      let totalScore = 0, count = 0;
+      for (const comp in composites) {
+        const max = attempts[comp] * 5;
+        const percent = max ? Math.round((composites[comp] / max) * 100) : 0;
+        scoreOutput.innerHTML += `<p><strong>${labelPrefix}${comp}:</strong> ${percent} / 100</p>`;
+        totalScore += percent;
         count++;
       }
 
-      return { score: count ? Math.round(sum / count) : 0, attempted, composites };
+      meta[testName] = { attempted: responses.filter(r => r).length };
+      return count ? Math.round(totalScore / count) : 0;
     }
 
-    function displayChart(scores) {
-      const chart = Chart.getChart(chartCanvas);
-      if (chart) chart.destroy();
-      new Chart(chartCanvas, {
+    async function calculateResults() {
+      for (const test of tests) {
+        const responses = JSON.parse(localStorage.getItem(`${test}_responses`) || "[]");
+        if (test === "iq") {
+          scores.IQ = scoreIQ(responses);
+        } else {
+          const labelPrefix = test.toUpperCase() + " - ";
+          scores[test.toUpperCase()] = await scoreComposite(test, labelPrefix);
+        }
+      }
+
+      const fourQS = Math.round((scores.IQ + scores.EQ + scores.AQ + scores.SQ) / 4);
+
+      for (const [key, val] of Object.entries(scores)) {
+        scoreOutput.innerHTML += `<p><strong>${key}:</strong> ${val} / 100</p>`;
+        const m = meta[key.toLowerCase()];
+        if (m) {
+          scoreOutput.innerHTML += `<p>Attempted: ${m.attempted || 0}</p>`;
+          if (m.correct !== undefined) {
+            scoreOutput.innerHTML += `<p>Correct: ${m.correct}</p>`;
+          }
+        }
+        scoreOutput.innerHTML += `<br/>`;
+      }
+
+      scoreOutput.innerHTML += `<hr/><p><strong>🧠 Final 4QS Score:</strong> ${fourQS} / 100</p>`;
+
+      new Chart(document.getElementById("radarChart"), {
         type: "radar",
         data: {
           labels: ["IQ", "EQ", "AQ", "SQ", "Stress"],
           datasets: [{
             label: "Your Score",
-            data: [
-              scores.IQ?.score ?? 0,
-              scores.EQ?.score ?? 0,
-              scores.AQ?.score ?? 0,
-              scores.SQ?.score ?? 0,
-              scores.STRESS?.score ?? 0,
-            ],
+            data: [scores.IQ, scores.EQ, scores.AQ, scores.SQ, scores.STRESS],
             fill: true,
             borderColor: "#007bff",
             backgroundColor: "rgba(0, 123, 255, 0.2)",
@@ -198,79 +154,52 @@
         options: {
           responsive: true,
           scales: {
-            r: { suggestedMin: 0, suggestedMax: 100 }
+            r: {
+              angleLines: { display: true },
+              suggestedMin: 0,
+              suggestedMax: 100
+            }
           }
         }
       });
-    }
 
-    async function submitResults(payload) {
-      syncStatusDiv.innerText = "⏳ Submitting results...";
-      syncStatusDiv.className = '';
-      try {
-        const res = await fetch(GOOGLE_SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
+      const payload = {
+        timestamp: new Date().toLocaleString(),
+        name: userInfo.name,
+        email: userInfo.email,
+        age: userInfo.age,
+        gender: userInfo.gender,
+        profession: userInfo.profession,
+        iq: scores.IQ,
+        eq: scores.EQ,
+        aq: scores.AQ,
+        sq: scores.SQ,
+        stress: scores.STRESS,
+        fourqs: fourQS
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbxkxU3-At3xITXT2MPCGQkZivclcGhwg7caebmeZDMKeOYqd9O7nUZRg021VGhBJRGp/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
         if (data.status === "success") {
-          syncStatusDiv.innerText = "✅ Submission successful!";
-          syncStatusDiv.className = "sync-success";
-          TESTS.forEach(t => localStorage.removeItem(`${t}_responses`));
-          localStorage.removeItem("iq_questions_shown");
+          document.getElementById("sync-status").innerText = "✅ Successfully submitted to Google Sheet!";
+          ["iq", "eq", "aq", "sq", "stress"].forEach(t => localStorage.removeItem(`${t}_responses`));
           localStorage.removeItem("user_info");
+          localStorage.removeItem("iq_questions_shown");
         } else {
-          throw new Error(data.message);
+          document.getElementById("sync-status").innerText = "⚠️ Submission failed: " + data.message;
         }
-      } catch (e) {
-        syncStatusDiv.innerText = `❌ Submission failed: ${e.message}`;
-        syncStatusDiv.className = "sync-error";
-      }
-    }
-
-    async function calculateAndDisplayResults() {
-      const user = getStoredJson("user_info", {});
-      displayUserInfo(user);
-      scoreOutputDiv.innerHTML = "<h2>📊 Score Breakdown</h2>";
-      const scores = {};
-
-      for (const test of TESTS) {
-        const key = test.toUpperCase();
-        const responses = getStoredJson(`${test}_responses`, []);
-        if (test === "iq") {
-          const shown = getStoredJson("iq_questions_shown", []);
-          scores.IQ = scoreIQ(responses, shown);
-          scoreOutputDiv.innerHTML += `<p><strong>IQ Score:</strong> ${scores.IQ.score} / 100</p><p><small>(Attempted: ${scores.IQ.attempted}, Correct: ${scores.IQ.correct})</small></p><hr/>`;
-        } else {
-          const result = await scoreComposite(test, `${key} - `);
-          scores[key] = result;
-          scoreOutputDiv.innerHTML += `<p><strong>${key} Overall:</strong> ${result.score} / 100</p><p><small>(Attempted: ${result.attempted})</small></p><hr/>`;
-        }
-      }
-
-      const final4qs = Math.round((scores.IQ.score + scores.EQ.score + scores.AQ.score + scores.SQ.score) / 4);
-      scoreOutputDiv.innerHTML += `<p class="final-score">🧠 Final 4QS Score: ${final4qs} / 100</p>`;
-
-      displayChart(scores);
-
-      await submitResults({
-        timestamp: new Date().toISOString(),
-        name: user.name || "",
-        email: user.email || "",
-        age: user.age || "",
-        gender: user.gender || "",
-        profession: user.profession || "",
-        iq: scores.IQ.score,
-        eq: scores.EQ.score,
-        aq: scores.AQ.score,
-        sq: scores.SQ.score,
-        stress: scores.STRESS.score,
-        fourqs: final4qs
+      })
+      .catch(() => {
+        document.getElementById("sync-status").innerText = "⚠️ Could not connect to Google Sheets.";
       });
     }
 
-    calculateAndDisplayResults();
+    calculateResults();
   </script>
 </body>
 </html>
